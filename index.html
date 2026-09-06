@@ -2,97 +2,218 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Рабочее время">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <title>Учёт рабочего времени</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#1f2937}
-.wrap{max-width:980px;margin:auto;padding:18px}h1{margin:0 0 8px;font-size:30px}.sub{color:#6b7280;margin-bottom:18px}
-.card{background:#fff;border-radius:16px;padding:18px;box-shadow:0 4px 16px rgba(0,0,0,.06);margin-bottom:16px}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}label{display:block;font-size:13px;color:#6b7280;margin-bottom:6px}
-input,textarea{width:100%;padding:12px 13px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
-textarea{min-height:80px;resize:vertical}.full{grid-column:1/-1}button{border:0;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:700;cursor:pointer}
-.primary{background:#111827;color:#fff}.secondary{background:#e5e7eb;color:#111827}.danger{background:#fee2e2;color:#991b1b}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.stat{background:#f9fafb;border-radius:12px;padding:14px}.stat b{display:block;font-size:24px;margin-top:6px}
-table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;font-size:14px}
-th{background:#f9fafb}.table-wrap{overflow:auto}.ok{color:#065f46;font-weight:700}.minus{color:#991b1b;font-weight:700}
-@media(max-width:700px){.grid,.stats{grid-template-columns:1fr}h1{font-size:24px}}
+:root{--bg:#eef2f7;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a;--green:#047857;--red:#b91c1c;--gold:#d6a82f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:linear-gradient(180deg,#dfe7ef 0,#f6f7f9 260px);color:var(--ink);min-height:100vh}
+.app{max-width:760px;margin:auto;padding:calc(14px + env(safe-area-inset-top)) 14px calc(88px + env(safe-area-inset-bottom))}
+.hero{background:linear-gradient(145deg,#111827,#25364f);color:#fff;border-radius:26px;padding:20px;box-shadow:0 14px 38px rgba(15,23,42,.22);position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.05);right:-70px;top:-60px}
+.hero-row{display:flex;align-items:center;gap:14px}.carIcon{width:72px;height:72px;border-radius:20px;background:linear-gradient(145deg,#e8c75d,#b98616);display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
+.hero h1{font-size:25px;margin:0 0 4px}.hero p{margin:0;color:#dbe4ef;font-size:14px}
+.profile-mini{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}.pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:8px 11px;font-size:13px}
+.card{background:var(--card);border-radius:22px;padding:16px;margin-top:14px;box-shadow:0 7px 24px rgba(15,23,42,.07)}
+.sectionTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.sectionTitle h2{margin:0;font-size:19px}.muted{color:var(--muted);font-size:13px}
+.today-date{font-weight:800;font-size:18px;margin-bottom:4px}.hoursPanel{text-align:center;padding:12px 0 4px}
+.hoursValue{font-size:54px;font-weight:850;letter-spacing:-2px}.hoursValue span{font-size:20px;color:var(--muted);font-weight:700}
+.stepper{display:flex;align-items:center;justify-content:center;gap:14px;margin:12px 0}
+.round{width:48px;height:48px;border-radius:16px;border:0;background:#eef2f7;color:#111827;font-size:25px;font-weight:800}
+.quick{display:flex;gap:8px;overflow:auto;padding:3px 0 8px}.quick button{min-width:58px;border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px;font-weight:750;color:#334155}
+.quick button.active{background:#111827;color:#fff;border-color:#111827}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field label{display:block;color:var(--muted);font-size:12px;margin:0 0 5px}.field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px 13px;font-size:16px;background:#fff;color:#111827}.field textarea{min-height:72px;resize:vertical}.full{grid-column:1/-1}
+.btn{width:100%;border:0;border-radius:16px;padding:14px 16px;font-size:16px;font-weight:800}.primary{background:#111827;color:#fff}.secondary{background:#eef2f7;color:#111827}.danger{background:#fee2e2;color:#991b1b}.smallbtn{width:auto;padding:9px 12px;font-size:13px;border-radius:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#f8fafc;border:1px solid #edf2f7;border-radius:16px;padding:12px}.stat span{display:block;color:var(--muted);font-size:11px}.stat b{display:block;font-size:21px;margin-top:4px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.cal-head button{border:0;background:#eef2f7;border-radius:12px;padding:9px 13px;font-size:17px}.cal-title{font-weight:850}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.dow{text-align:center;color:var(--muted);font-size:11px;padding:4px 0}.day{min-height:58px;border:1px solid var(--line);border-radius:13px;background:#fff;padding:6px;position:relative;text-align:left}.day.empty{border:0;background:transparent}.day.today{outline:2px solid #111827}.day.selected{background:#111827;color:#fff}.daynum{font-size:12px;font-weight:750}.dayhours{display:block;margin-top:8px;font-weight:850;font-size:13px}.day.selected .dayhours{color:#f4d46d}.weekend{background:#fafafa}
+.list{overflow:auto}.history{width:100%;border-collapse:collapse;min-width:620px}.history th,.history td{padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}.history th{color:var(--muted);font-weight:650}
+.balance.plus{color:var(--green)}.balance.minus{color:var(--red)}
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(760px,100%);background:rgba(255,255,255,.93);backdrop-filter:blur(16px);border-top:1px solid rgba(148,163,184,.25);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 8px calc(8px + env(safe-area-inset-bottom));z-index:20}
+.nav button{border:0;background:transparent;padding:7px 2px;color:#64748b;font-size:11px}.nav button b{display:block;font-size:20px;margin-bottom:2px}.nav button.active{color:#111827;font-weight:800}
+.page{display:none}.page.active{display:block}.install{font-size:12px;color:#dbe4ef;margin-top:10px}
+@media(max-width:520px){.grid2{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}.stat b{font-size:18px}.day{min-height:52px;padding:5px}.hero h1{font-size:22px}}
 </style>
 </head>
 <body>
-<div class="wrap">
-<h1>Учёт рабочего времени</h1>
-<div class="sub">Простое бесплатное приложение. Данные сохраняются на этом устройстве.</div>
+<div class="app">
+  <div class="hero">
+    <div class="hero-row">
+      <div class="carIcon">🚙</div>
+      <div><h1>Учёт рабочего времени</h1><p>Рабочие часы всегда под рукой</p></div>
+    </div>
+    <div class="profile-mini">
+      <div class="pill" id="heroName">Работник не указан</div>
+      <div class="pill" id="heroCar">Машина не указана</div>
+    </div>
+    <div class="install">Можно добавить на экран телефона и открывать как приложение.</div>
+  </div>
 
-<div class="card">
-<div class="grid">
-<div><label>Имя работника</label><input id="name" placeholder="Например: Олег"></div>
-<div><label>Номер машины</label><input id="car" placeholder="Например: 123 ABC"></div>
-<div><label>Дата</label><input id="date" type="date"></div>
-<div><label>Норма часов</label><input id="norm" type="number" min="0" step="0.25" value="8"></div>
-<div><label>Отработано часов</label><input id="hours" type="number" min="0" step="0.25" placeholder="Например: 8 или 10.5"></div>
-<div><label>Объект / место работы</label><input id="place" placeholder="Необязательно"></div>
-<div class="full"><label>Примечание</label><textarea id="note" placeholder="Необязательно"></textarea></div>
-</div>
-<div class="actions">
-<button class="primary" onclick="saveEntry()">Сохранить день</button>
-<button class="secondary" onclick="clearForm()">Очистить форму</button>
-</div>
+  <section id="page-today" class="page active">
+    <div class="card">
+      <div class="sectionTitle"><h2>Сегодня</h2><span class="muted" id="todayLabel"></span></div>
+      <div class="today-date" id="selectedDateLabel"></div>
+      <div class="muted">Выставь часы и сохрани день</div>
+      <div class="hoursPanel">
+        <div class="hoursValue"><span id="hoursNum">8</span> <span>ч</span></div>
+        <div class="stepper">
+          <button class="round" onclick="changeHours(-0.5)">−</button>
+          <button class="round" onclick="changeHours(0.5)">+</button>
+        </div>
+        <div class="quick" id="quickHours"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Норма часов</label><input id="norm" type="number" min="0" step="0.5" value="8"></div>
+        <div class="field"><label>Свои часы</label><input id="hoursInput" type="number" min="0" step="0.5" value="8"></div>
+        <div class="field full"><label>Объект / место работы</label><input id="place" placeholder="Необязательно"></div>
+        <div class="field full"><label>Примечание</label><textarea id="note" placeholder="Необязательно"></textarea></div>
+      </div>
+      <div style="height:10px"></div>
+      <button class="btn primary" onclick="saveDay()">Сохранить день</button>
+    </div>
+
+    <div class="card">
+      <div class="sectionTitle"><h2>Итоги месяца</h2><span class="muted" id="monthMini"></span></div>
+      <div class="stats">
+        <div class="stat"><span>Отработано</span><b id="totalHours">0 ч</b></div>
+        <div class="stat"><span>Норма</span><b id="totalNorm">0 ч</b></div>
+        <div class="stat"><span>Баланс</span><b id="balance">0 ч</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-calendar" class="page">
+    <div class="card">
+      <div class="cal-head">
+        <button onclick="moveMonth(-1)">‹</button>
+        <div class="cal-title" id="calTitle"></div>
+        <button onclick="moveMonth(1)">›</button>
+      </div>
+      <div class="calendar" id="calendar"></div>
+      <div class="muted" style="margin-top:12px">Нажми на любой день, чтобы открыть и изменить часы.</div>
+    </div>
+  </section>
+
+  <section id="page-history" class="page">
+    <div class="card">
+      <div class="sectionTitle"><h2>История</h2><button class="btn secondary smallbtn" onclick="exportCSV()">Скачать CSV</button></div>
+      <div class="list"><table class="history"><thead><tr><th>Дата</th><th>Часы</th><th>Норма</th><th>Баланс</th><th>Объект</th><th></th></tr></thead><tbody id="historyRows"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="page-profile" class="page">
+    <div class="card">
+      <div class="sectionTitle"><h2>Работник</h2></div>
+      <div class="grid2">
+        <div class="field"><label>Имя работника</label><input id="name" placeholder="Например: Олег"></div>
+        <div class="field"><label>Номер машины</label><input id="car" placeholder="Например: 123 ABC"></div>
+        <div class="field full"><label>Норма рабочего дня по умолчанию</label><input id="defaultNorm" type="number" min="0" step="0.5" value="8"></div>
+      </div>
+      <div style="height:10px"></div>
+      <button class="btn primary" onclick="saveProfile()">Сохранить данные</button>
+    </div>
+    <div class="card">
+      <div class="sectionTitle"><h2>Данные</h2></div>
+      <button class="btn danger" onclick="clearAll()">Удалить все записи</button>
+    </div>
+  </section>
 </div>
 
-<div class="card">
-<div class="stats">
-<div class="stat">Всего отработано<b id="totalHours">0 ч</b></div>
-<div class="stat">Норма<b id="totalNorm">0 ч</b></div>
-<div class="stat">Баланс<b id="balance">0 ч</b></div>
-</div>
-</div>
-
-<div class="card">
-<div class="actions" style="margin-top:0;margin-bottom:12px">
-<button class="secondary" onclick="exportCSV()">Скачать CSV</button>
-<button class="danger" onclick="clearAll()">Удалить все записи</button>
-</div>
-<div class="table-wrap">
-<table>
-<thead><tr><th>Дата</th><th>Работник</th><th>Машина</th><th>Норма</th><th>Часы</th><th>Баланс</th><th>Объект</th><th>Примечание</th><th></th></tr></thead>
-<tbody id="rows"></tbody>
-</table>
-</div>
-</div>
-</div>
+<nav class="nav">
+  <button class="active" onclick="showPage('today',this)"><b>⏱️</b>Сегодня</button>
+  <button onclick="showPage('calendar',this)"><b>📅</b>Календарь</button>
+  <button onclick="showPage('history',this)"><b>📋</b>История</button>
+  <button onclick="showPage('profile',this)"><b>👤</b>Профиль</button>
+</nav>
 
 <script>
-const KEY='workTimeEntriesV1', $=id=>document.getElementById(id);
-$('date').value=new Date().toISOString().slice(0,10);
-function getData(){return JSON.parse(localStorage.getItem(KEY)||'[]')}
-function setData(d){localStorage.setItem(KEY,JSON.stringify(d))}
-function n(v){return Number(v||0)}
-function saveEntry(){
- const e={id:Date.now(),name:$('name').value.trim(),car:$('car').value.trim(),date:$('date').value,norm:n($('norm').value),hours:n($('hours').value),place:$('place').value.trim(),note:$('note').value.trim()};
- if(!e.name){alert('Введите имя работника');return}
- if(!e.date){alert('Выберите дату');return}
- if($('hours').value===''){alert('Введите отработанные часы');return}
- const d=getData(); d.push(e); setData(d); render(); $('hours').value=''; $('place').value=''; $('note').value='';
-}
-function clearForm(){ $('name').value=''; $('car').value=''; $('date').value=new Date().toISOString().slice(0,10); $('norm').value='8'; $('hours').value=''; $('place').value=''; $('note').value='';}
-function removeEntry(id){setData(getData().filter(x=>x.id!==id));render()}
-function clearAll(){if(confirm('Удалить все записи?')){localStorage.removeItem(KEY);render()}}
+const DATA_KEY='workTimeEntriesV2', PROFILE_KEY='workTimeProfileV2';
+const $=id=>document.getElementById(id);
+let selectedDate=new Date(), viewMonth=new Date(selectedDate.getFullYear(),selectedDate.getMonth(),1), hours=8;
+const months=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const weekdays=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+function pad(n){return String(n).padStart(2,'0')}
+function keyDate(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function parseDate(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function fmtDate(d){return d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}
+function getData(){return JSON.parse(localStorage.getItem(DATA_KEY)||'{}')}
+function setData(d){localStorage.setItem(DATA_KEY,JSON.stringify(d))}
+function getProfile(){return JSON.parse(localStorage.getItem(PROFILE_KEY)||'{"name":"","car":"","defaultNorm":8}')}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function render(){
- const d=getData().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id); let th=0,tn=0;
- $('rows').innerHTML=d.map(x=>{const bal=n(x.hours)-n(x.norm);th+=n(x.hours);tn+=n(x.norm);
- return `<tr><td>${esc(x.date)}</td><td>${esc(x.name)}</td><td>${esc(x.car)}</td><td>${n(x.norm).toFixed(2)}</td><td>${n(x.hours).toFixed(2)}</td><td class="${bal>=0?'ok':'minus'}">${bal>=0?'+':''}${bal.toFixed(2)}</td><td>${esc(x.place)}</td><td>${esc(x.note)}</td><td><button class="danger" onclick="removeEntry(${x.id})">Удалить</button></td></tr>`}).join('');
- const bal=th-tn; $('totalHours').textContent=th.toFixed(2)+' ч'; $('totalNorm').textContent=tn.toFixed(2)+' ч'; $('balance').textContent=(bal>=0?'+':'')+bal.toFixed(2)+' ч'; $('balance').className=bal>=0?'ok':'minus';
+function showPage(p,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(`page-${p}`).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');if(p==='calendar')renderCalendar();if(p==='history')renderHistory()}
+function renderQuick(){const vals=[6,7,8,9,10,12];$('quickHours').innerHTML=vals.map(v=>`<button class="${hours===v?'active':''}" onclick="setHours(${v})">${v} ч</button>`).join('')}
+function setHours(v){hours=Math.max(0,Number(v)||0);$('hoursNum').textContent=hours.toString().replace('.5',',5');$('hoursInput').value=hours;renderQuick()}
+function changeHours(d){setHours(Math.round((hours+d)*2)/2)}
+$('hoursInput').addEventListener('input',e=>setHours(e.target.value));
+function loadSelected(){
+ const p=getProfile(), data=getData(), k=keyDate(selectedDate), e=data[k];
+ $('selectedDateLabel').textContent=fmtDate(selectedDate);
+ if(e){setHours(e.hours);$('norm').value=e.norm;$('place').value=e.place||'';$('note').value=e.note||''}
+ else{setHours(p.defaultNorm||8);$('norm').value=p.defaultNorm||8;$('place').value='';$('note').value=''}
+}
+function saveDay(){
+ const data=getData(), k=keyDate(selectedDate);
+ data[k]={date:k,hours:Number(hours),norm:Number($('norm').value||0),place:$('place').value.trim(),note:$('note').value.trim()};
+ setData(data);renderAll(); alert('День сохранён');
+}
+function deleteDay(k){if(confirm('Удалить запись за этот день?')){const d=getData();delete d[k];setData(d);renderAll()}}
+function saveProfile(){
+ const p={name:$('name').value.trim(),car:$('car').value.trim(),defaultNorm:Number($('defaultNorm').value||8)};
+ localStorage.setItem(PROFILE_KEY,JSON.stringify(p));renderProfile();alert('Данные сохранены');
+}
+function renderProfile(){
+ const p=getProfile();$('name').value=p.name||'';$('car').value=p.car||'';$('defaultNorm').value=p.defaultNorm||8;
+ $('heroName').textContent=p.name?`👤 ${p.name}`:'👤 Работник не указан';$('heroCar').textContent=p.car?`🚙 ${p.car}`:'🚙 Машина не указана';
+}
+function selectDay(k){
+ selectedDate=parseDate(k);viewMonth=new Date(selectedDate.getFullYear(),selectedDate.getMonth(),1);loadSelected();
+ const btn=document.querySelector('.nav button');showPage('today',btn);
+}
+function moveMonth(n){viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth()+n,1);renderCalendar()}
+function renderCalendar(){
+ $('calTitle').textContent=`${months[viewMonth.getMonth()]} ${viewMonth.getFullYear()}`;
+ const data=getData(), first=new Date(viewMonth.getFullYear(),viewMonth.getMonth(),1), last=new Date(viewMonth.getFullYear(),viewMonth.getMonth()+1,0);
+ let start=(first.getDay()+6)%7, html=weekdays.map(x=>`<div class="dow">${x}</div>`).join('');
+ for(let i=0;i<start;i++)html+='<div class="day empty"></div>';
+ const todayK=keyDate(new Date()), selectedK=keyDate(selectedDate);
+ for(let d=1;d<=last.getDate();d++){
+   const dt=new Date(viewMonth.getFullYear(),viewMonth.getMonth(),d), k=keyDate(dt), e=data[k], wd=(dt.getDay()+6)%7;
+   html+=`<button class="day ${k===todayK?'today':''} ${k===selectedK?'selected':''} ${wd>=5?'weekend':''}" onclick="selectDay('${k}')"><span class="daynum">${d}</span>${e?`<span class="dayhours">${e.hours} ч</span>`:''}</button>`;
+ }
+ $('calendar').innerHTML=html;
+}
+function monthEntries(){
+ const data=getData(), ym=`${viewMonth.getFullYear()}-${pad(viewMonth.getMonth()+1)}`;
+ return Object.values(data).filter(x=>x.date.startsWith(ym));
+}
+function renderStats(){
+ const ym=`${selectedDate.getFullYear()}-${pad(selectedDate.getMonth()+1)}`, arr=Object.values(getData()).filter(x=>x.date.startsWith(ym));
+ const h=arr.reduce((s,x)=>s+Number(x.hours||0),0), n=arr.reduce((s,x)=>s+Number(x.norm||0),0), b=h-n;
+ $('totalHours').textContent=`${h.toFixed(1)} ч`;$('totalNorm').textContent=`${n.toFixed(1)} ч`;$('balance').textContent=`${b>=0?'+':''}${b.toFixed(1)} ч`;
+ $('balance').className='balance '+(b>=0?'plus':'minus');$('monthMini').textContent=`${months[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
+}
+function renderHistory(){
+ const arr=Object.values(getData()).sort((a,b)=>b.date.localeCompare(a.date));
+ $('historyRows').innerHTML=arr.length?arr.map(x=>{const b=Number(x.hours)-Number(x.norm);return `<tr><td>${parseDate(x.date).toLocaleDateString('ru-RU')}</td><td><b>${x.hours} ч</b></td><td>${x.norm} ч</td><td class="${b>=0?'balance plus':'balance minus'}">${b>=0?'+':''}${b.toFixed(1)}</td><td>${esc(x.place)}</td><td><button class="btn danger smallbtn" onclick="deleteDay('${x.date}')">Удалить</button></td></tr>`}).join(''):'<tr><td colspan="6" class="muted">Записей пока нет</td></tr>';
 }
 function exportCSV(){
- const d=getData(), rows=[['Дата','Работник','Машина','Норма','Отработано','Баланс','Объект','Примечание']];
- d.forEach(x=>rows.push([x.date,x.name,x.car,x.norm,x.hours,n(x.hours)-n(x.norm),x.place,x.note]));
+ const p=getProfile(), arr=Object.values(getData()).sort((a,b)=>a.date.localeCompare(b.date));
+ const rows=[['Работник',p.name],['Машина',p.car],[],['Дата','Часы','Норма','Баланс','Объект','Примечание']];
+ arr.forEach(x=>rows.push([x.date,x.hours,x.norm,Number(x.hours)-Number(x.norm),x.place||'',x.note||'']));
  const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n');
- const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}), a=document.createElement('a');
- a.href=URL.createObjectURL(blob); a.download='uchet_rabochego_vremeni.csv'; a.click(); URL.revokeObjectURL(a.href);
+ const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='uchet-rabochego-vremeni.csv';a.click();URL.revokeObjectURL(a.href);
 }
-render();
+function clearAll(){if(confirm('Удалить абсолютно все записи рабочего времени?')){localStorage.removeItem(DATA_KEY);renderAll()}}
+function renderAll(){renderProfile();loadSelected();renderStats();renderCalendar();renderHistory()}
+$('todayLabel').textContent=new Date().toLocaleDateString('ru-RU',{weekday:'long'});
+renderAll();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
 </script>
 </body>
 </html>
