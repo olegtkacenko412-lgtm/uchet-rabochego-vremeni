@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Учёт рабочего времени</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#1f2937}
+.wrap{max-width:980px;margin:auto;padding:18px}h1{margin:0 0 8px;font-size:30px}.sub{color:#6b7280;margin-bottom:18px}
+.card{background:#fff;border-radius:16px;padding:18px;box-shadow:0 4px 16px rgba(0,0,0,.06);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}label{display:block;font-size:13px;color:#6b7280;margin-bottom:6px}
+input,textarea{width:100%;padding:12px 13px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
+textarea{min-height:80px;resize:vertical}.full{grid-column:1/-1}button{border:0;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:700;cursor:pointer}
+.primary{background:#111827;color:#fff}.secondary{background:#e5e7eb;color:#111827}.danger{background:#fee2e2;color:#991b1b}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{background:#f9fafb;border-radius:12px;padding:14px}.stat b{display:block;font-size:24px;margin-top:6px}
+table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;font-size:14px}
+th{background:#f9fafb}.table-wrap{overflow:auto}.ok{color:#065f46;font-weight:700}.minus{color:#991b1b;font-weight:700}
+@media(max-width:700px){.grid,.stats{grid-template-columns:1fr}h1{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Учёт рабочего времени</h1>
+<div class="sub">Простое бесплатное приложение. Данные сохраняются на этом устройстве.</div>
+
+<div class="card">
+<div class="grid">
+<div><label>Имя работника</label><input id="name" placeholder="Например: Олег"></div>
+<div><label>Номер машины</label><input id="car" placeholder="Например: 123 ABC"></div>
+<div><label>Дата</label><input id="date" type="date"></div>
+<div><label>Норма часов</label><input id="norm" type="number" min="0" step="0.25" value="8"></div>
+<div><label>Отработано часов</label><input id="hours" type="number" min="0" step="0.25" placeholder="Например: 8 или 10.5"></div>
+<div><label>Объект / место работы</label><input id="place" placeholder="Необязательно"></div>
+<div class="full"><label>Примечание</label><textarea id="note" placeholder="Необязательно"></textarea></div>
+</div>
+<div class="actions">
+<button class="primary" onclick="saveEntry()">Сохранить день</button>
+<button class="secondary" onclick="clearForm()">Очистить форму</button>
+</div>
+</div>
+
+<div class="card">
+<div class="stats">
+<div class="stat">Всего отработано<b id="totalHours">0 ч</b></div>
+<div class="stat">Норма<b id="totalNorm">0 ч</b></div>
+<div class="stat">Баланс<b id="balance">0 ч</b></div>
+</div>
+</div>
+
+<div class="card">
+<div class="actions" style="margin-top:0;margin-bottom:12px">
+<button class="secondary" onclick="exportCSV()">Скачать CSV</button>
+<button class="danger" onclick="clearAll()">Удалить все записи</button>
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Дата</th><th>Работник</th><th>Машина</th><th>Норма</th><th>Часы</th><th>Баланс</th><th>Объект</th><th>Примечание</th><th></th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<script>
+const KEY='workTimeEntriesV1', $=id=>document.getElementById(id);
+$('date').value=new Date().toISOString().slice(0,10);
+function getData(){return JSON.parse(localStorage.getItem(KEY)||'[]')}
+function setData(d){localStorage.setItem(KEY,JSON.stringify(d))}
+function n(v){return Number(v||0)}
+function saveEntry(){
+ const e={id:Date.now(),name:$('name').value.trim(),car:$('car').value.trim(),date:$('date').value,norm:n($('norm').value),hours:n($('hours').value),place:$('place').value.trim(),note:$('note').value.trim()};
+ if(!e.name){alert('Введите имя работника');return}
+ if(!e.date){alert('Выберите дату');return}
+ if($('hours').value===''){alert('Введите отработанные часы');return}
+ const d=getData(); d.push(e); setData(d); render(); $('hours').value=''; $('place').value=''; $('note').value='';
+}
+function clearForm(){ $('name').value=''; $('car').value=''; $('date').value=new Date().toISOString().slice(0,10); $('norm').value='8'; $('hours').value=''; $('place').value=''; $('note').value='';}
+function removeEntry(id){setData(getData().filter(x=>x.id!==id));render()}
+function clearAll(){if(confirm('Удалить все записи?')){localStorage.removeItem(KEY);render()}}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function render(){
+ const d=getData().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id); let th=0,tn=0;
+ $('rows').innerHTML=d.map(x=>{const bal=n(x.hours)-n(x.norm);th+=n(x.hours);tn+=n(x.norm);
+ return `<tr><td>${esc(x.date)}</td><td>${esc(x.name)}</td><td>${esc(x.car)}</td><td>${n(x.norm).toFixed(2)}</td><td>${n(x.hours).toFixed(2)}</td><td class="${bal>=0?'ok':'minus'}">${bal>=0?'+':''}${bal.toFixed(2)}</td><td>${esc(x.place)}</td><td>${esc(x.note)}</td><td><button class="danger" onclick="removeEntry(${x.id})">Удалить</button></td></tr>`}).join('');
+ const bal=th-tn; $('totalHours').textContent=th.toFixed(2)+' ч'; $('totalNorm').textContent=tn.toFixed(2)+' ч'; $('balance').textContent=(bal>=0?'+':'')+bal.toFixed(2)+' ч'; $('balance').className=bal>=0?'ok':'minus';
+}
+function exportCSV(){
+ const d=getData(), rows=[['Дата','Работник','Машина','Норма','Отработано','Баланс','Объект','Примечание']];
+ d.forEach(x=>rows.push([x.date,x.name,x.car,x.norm,x.hours,n(x.hours)-n(x.norm),x.place,x.note]));
+ const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n');
+ const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}), a=document.createElement('a');
+ a.href=URL.createObjectURL(blob); a.download='uchet_rabochego_vremeni.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+render();
+</script>
+</body>
+</html>
